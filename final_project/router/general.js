@@ -52,48 +52,72 @@ public_users.get('/', async function (req, res) {
     try {
         booksJSON = await getAllBooks();
       } catch (error) {
-        res.status(404).json({message: error.message});
+        res.status(500).json({message: error.message});
     }
     res.send(booksJSON);
 });
 
-const getBookByISBN = new Promise((resolve, reject) => {
-    
-    let success = true; 
-    
-    if (success) { 
-      resolve("The operation was successful!");
-    } else { 
-      // If the condition is false, call reject to mark the promise as rejected
-      reject("The operation failed!");
-    } 
-  });
+
+function getBookByISBN(isbn) {
+    return new Promise((resolve, reject) => {
+        let book = books[isbn]; 
+        if (book) { 
+            resolve(book);
+        } else { 
+            reject("getBookByISBN failed!");
+        } 
+    });
+}
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
     const isbn = req.params.isbn;
-    res.send(books[isbn]);
+    getBookByISBN(isbn)
+    .then(book => {
+        res.send(book);
+    })
+    .catch(error => {
+        res.status(500).json({message: error});
+    });
  });
-  
+
+
+ function getBooksByAutor(author) {
+    return new Promise(resolve => {
+        let result = {};
+        for (var isbn in books) {
+            if (books[isbn].author.includes(author)) {
+                result[isbn] = books[isbn];
+            }
+        }
+        resolve(result);
+    });
+}
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
-    let result = {};
-    for (var isbn in books) {
-        if (books[isbn].author.includes(req.params.author)) {
-            result[isbn] = books[isbn];
-        }
-    }
-    return res.send(result);
+    getBooksByAutor(req.params.author)
+    .then(result => {
+        res.send(result);
+    });
 });
 
+
+function getBooksByTitle(title) {
+    return new Promise(resolve => {
+        let result = {};
+        for (var isbn in books) {
+            if (books[isbn].title.includes(title)) {
+                result[isbn] = books[isbn];
+            }
+        }
+        resolve(result);
+    });
+}
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
-    let result = {};
-    for (var isbn in books) {
-        if (books[isbn].title.includes(req.params.title)) {
-            result[isbn] = books[isbn];
-        }
-    }
-    return res.send(result);
+    getBooksByTitle(req.params.title)
+    .then(result => {
+        res.send(result);
+    });
 });
 
 //  Get book review

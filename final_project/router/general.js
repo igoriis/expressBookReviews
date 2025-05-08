@@ -32,17 +32,42 @@ public_users.post("/register", (req,res) => {
     return res.status(404).json({message: "Unable to register user."});
 });
 
-router.get("/users",(req,res)=>{
+public_users.get("/users",(req,res)=>{
     // Send JSON response with formatted friends data
     res.send(JSON.stringify(users,null,4));
 
 });
 
+const getAllBooks = async function () {
+    let booksJSON = JSON.stringify(books, null, 4);
+    if (booksJSON) {
+        return booksJSON;
+    } else {
+        throw new Error("getAllBooks failed!");
+    }
+}
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  res.send(JSON.stringify(books,null,4));
+public_users.get('/', async function (req, res) {
+    let booksJSON;
+    try {
+        booksJSON = await getAllBooks();
+      } catch (error) {
+        res.status(404).json({message: error.message});
+    }
+    res.send(booksJSON);
 });
 
+const getBookByISBN = new Promise((resolve, reject) => {
+    
+    let success = true; 
+    
+    if (success) { 
+      resolve("The operation was successful!");
+    } else { 
+      // If the condition is false, call reject to mark the promise as rejected
+      reject("The operation failed!");
+    } 
+  });
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
     const isbn = req.params.isbn;
